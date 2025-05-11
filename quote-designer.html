@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Quote Designer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+    #quoteBox {
+      width: 500px;
+      height: 300px;
+      background: #ffffff;
+      margin: 20px auto;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    #quoteText {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+    #quoteAuthor {
+      font-size: 18px;
+      font-style: italic;
+    }
+    input, select, button {
+      margin: 10px;
+      padding: 8px;
+      font-size: 16px;
+    }
+    canvas {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎨 Desain Quote-mu Sendiri</h1>
+
+  <input type="text" id="textInput" placeholder="Tulis quotemu di sini" size="40"><br>
+  <input type="text" id="authorInput" placeholder="Nama Penulis (opsional)" size="30"><br>
+
+  <label>🎨 Warna Background:</label>
+  <input type="color" id="bgColor"><br>
+
+  <label>🔤 Font Style:</label>
+  <select id="fontStyle">
+    <option value="Arial">Arial</option>
+    <option value="Georgia">Georgia</option>
+    <option value="'Courier New'">Courier New</option>
+    <option value="Tahoma">Tahoma</option>
+    <option value="Verdana">Verdana</option>
+  </select><br>
+
+  <button onclick="updateQuote()">Update Quote</button>
+  <button onclick="downloadQuote()">Download as Image</button>
+
+  <div id="quoteBox">
+    <div id="quoteText">Quote kamu akan tampil di sini</div>
+    <div id="quoteAuthor"></div>
+  </div>
+
+  <canvas id="canvas" width="500" height="300"></canvas>
+
+  <script>
+    function updateQuote() {
+      const text = document.getElementById("textInput").value;
+      const author = document.getElementById("authorInput").value;
+      const color = document.getElementById("bgColor").value;
+      const font = document.getElementById("fontStyle").value;
+
+      const box = document.getElementById("quoteBox");
+      const quoteText = document.getElementById("quoteText");
+      const quoteAuthor = document.getElementById("quoteAuthor");
+
+      box.style.backgroundColor = color;
+      quoteText.style.fontFamily = font;
+      quoteAuthor.style.fontFamily = font;
+
+      quoteText.textContent = text || "Quote kamu akan tampil di sini";
+      quoteAuthor.textContent = author ? `– ${author}` : "";
+    }
+
+    function downloadQuote() {
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+
+      const color = document.getElementById("bgColor").value;
+      const font = document.getElementById("fontStyle").value;
+      const text = document.getElementById("textInput").value;
+      const author = document.getElementById("authorInput").value;
+
+      // background
+      ctx.fillStyle = color || "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = "#000";
+      ctx.font = `20px ${font}`;
+      ctx.textAlign = "center";
+
+      // wrap text
+      const lines = wrapText(ctx, text, 480);
+      lines.forEach((line, i) => {
+        ctx.fillText(line, canvas.width / 2, 100 + i * 30);
+      });
+
+      if (author) {
+        ctx.font = `16px ${font}`;
+        ctx.fillText(`– ${author}`, canvas.width / 2, 100 + lines.length * 30 + 20);
+      }
+
+      const link = document.createElement("a");
+      link.download = "quote.png";
+      link.href = canvas.toDataURL();
+      link.click();
+    }
+
+    function wrapText(ctx, text, maxWidth) {
+      const words = text.split(" ");
+      let lines = [];
+      let line = "";
+      for (let i = 0; i < words.length; i++) {
+        const testLine = line + words[i] + " ";
+        const metrics = ctx.measureText(testLine);
+        const testWidth = metrics.width;
+        if (testWidth > maxWidth && i > 0) {
+          lines.push(line);
+          line = words[i] + " ";
+        } else {
+          line = testLine;
+        }
+      }
+      lines.push(line.trim());
+      return lines;
+    }
+  </script>
+
+</body>
+</html>
